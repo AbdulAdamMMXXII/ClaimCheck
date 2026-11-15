@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ClaimCheck — academic claim reliability</title>
+  <style>
+    :root { color-scheme: light; --ink:#172033; --muted:#526079; --paper:#fff; --wash:#f3f7fb; --line:#d7e0eb; --blue:#145da0; --green:#176b4d; --amber:#87520b; --red:#9f2d2d; }
+    [data-theme="dark"] { color-scheme: dark; --ink:#eef4fb; --muted:#bac7d6; --paper:#182333; --wash:#0e1724; --line:#334358; --blue:#80bcff; --green:#6ee0af; --amber:#f7c66e; --red:#ff9797; }
+    * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:var(--wash); font:16px/1.5 system-ui,sans-serif; }
+    header { background:var(--blue); color:white; padding:24px max(20px,calc((100% - 1080px)/2)); }
+    header h1 { margin:0 0 4px; font-size:clamp(1.7rem,4vw,2.4rem); } header p { margin:0; max-width:700px; }
+    main { max-width:1080px; margin:24px auto; padding:0 20px; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr); gap:20px; }
+    .panel { background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:22px; box-shadow:0 5px 18px #17203312; }
+    label { display:block; font-weight:700; margin-bottom:8px; } textarea { width:100%; min-height:130px; resize:vertical; border:2px solid var(--line); border-radius:10px; padding:12px; color:var(--ink); background:var(--paper); font:inherit; }
+    textarea:focus,button:focus { outline:3px solid #80bcff; outline-offset:2px; } button { border:0; border-radius:9px; padding:10px 16px; background:var(--blue); color:white; font:inherit; font-weight:700; cursor:pointer; }
+    select:focus { outline:3px solid #80bcff; outline-offset:2px; } select { width:100%; padding:10px; border:2px solid var(--line); border-radius:9px; color:var(--ink); background:var(--paper); font:inherit; }
+    button.secondary { background:transparent; color:var(--blue); border:1px solid var(--blue); } .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .controls { display:grid; grid-template-columns:1fr 160px; gap:12px; margin-top:16px; }
+    .hint,.muted { color:var(--muted); font-size:.92rem; } .result { min-height:290px; } .result h2 { margin-top:0; }
+    .badge { display:inline-block; padding:5px 10px; border-radius:999px; font-weight:700; font-size:.9rem; } .supported { color:var(--green); background:#dff4e9; } .partial { color:var(--amber); background:#fff0cd; } .unknown { color:var(--red); background:#ffe0e0; }
+    .meter { height:10px; background:var(--line); border-radius:8px; overflow:hidden; margin:8px 0 18px; } .meter span { display:block; height:100%; background:var(--green); }
+    .evidence { border-left:4px solid var(--blue); padding:10px 12px; margin:12px 0; background:var(--wash); } .evidence cite { display:block; color:var(--muted); font-size:.88rem; margin-top:6px; }
+    .warning { padding:10px 12px; border-left:4px solid var(--amber); background:#fff0cd; color:var(--amber); } .choice { padding:12px; background:var(--wash); border-radius:9px; }
+    .large-text { font-size:18px; } ul { padding-left:20px; } .toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; } .toolbar button { padding:7px 10px; font-size:.9rem; }
+    @media (max-width:760px) { main { grid-template-columns:1fr; margin-top:16px; } .panel { padding:17px; } }
+  </style>
+</head>
+<body>
+  <header><h1>ClaimCheck</h1><p>Check one AI-generated academic claim against a small, traceable evidence set before you use it in an assignment.</p></header>
+  <main>
+    <section class="panel">
+      <div class="toolbar"><h2>Check a claim</h2><button class="secondary" id="theme" type="button">Dark mode</button></div>
+      <label for="claim">AI-generated claim</label>
+      <textarea id="claim" maxlength="500" placeholder="Example: Retrieval practice improves long-term retention."></textarea>
+      <p class="hint">Use one factual claim at a time. ClaimCheck does not invent sources or browse the web.</p>
+      <div class="controls">
+        <div><label for="mode">Checking approach</label>
+          <select id="mode">
+            <option value="strict">Strict - only strong matches</option>
+            <option value="balanced" selected>Balanced - recommended</option>
+            <option value="exploratory">Exploratory - show weaker leads</option>
+          </select>
+          <p class="hint">This changes how much evidence is required, not the truth of the claim.</p>
+        </div>
+        <div><label for="evidence-limit">Evidence passages</label>
+          <select id="evidence-limit"><option value="2">2</option><option value="4" selected>4</option><option value="6">6</option></select>
+        </div>
+        <div><label for="text-size">Text size</label>
+          <select id="text-size"><option value="normal" selected>Normal</option><option value="large">Large</option></select>
+        </div>
+      </div>
+      <div class="actions"><button id="check" type="button">Check reliability</button><button class="secondary" id="example" type="button">Try an example</button></div>
+    </section>
+    <section class="panel result" aria-live="polite" id="result"><h2>Result</h2><p class="muted">Your evidence summary will appear here.</p></section>
+  </main>
+  <script>
+    const claim = document.querySelector('#claim'), result = document.querySelector('#result');
+    const render = data => {
+      if (data.error) { result.innerHTML = `<h2>Check not run</h2><p class="badge unknown">${data.error}</p>`; return; }
+      const evidence = data.evidence.length ? data.evidence.map(item =>
+        `<article class="evidence"><strong>${item.text}</strong><cite>${item.source} · ${item.section} · updated ${item.date} · relevance ${item.score}</cite></article>`).join('') :
+        '<p class="muted">No matching evidence was retrieved.</p>';
+      const wording = data.wording_note ? `<p class="warning"><strong>Check the wording:</strong> ${data.wording_note}</p>` : '';
+      const external = data.status === 'unknown' ? `<p class="choice"><strong>Choose your next step:</strong><br><a href="${data.scholar_url}" target="_blank" rel="noopener">Search this claim in Google Scholar</a> <span class="muted">(opens an external site)</span></p>` : '';
+      result.innerHTML = `<h2>Result</h2><p class="badge ${data.status}">${data.verdict}</p><p><strong>Evidence confidence: ${Math.round(data.confidence * 100)}%</strong></p><div class="meter"><span style="width:${data.confidence * 100}%"></span></div>${wording}<p>${data.summary}</p><p><strong>Next step:</strong> ${data.next_step}</p><div class="actions"><button class="secondary" id="edit">Edit claim</button><button class="secondary" id="unverified">Mark unverified</button><button class="secondary" id="cautious">Use cautiously</button></div>${external}<h3>Evidence trail</h3>${evidence}<h3>Limits</h3><ul>${data.limitations.map(item => `<li>${item}</li>`).join('')}</ul>`;
+      document.querySelector('#edit').onclick = () => { claim.focus(); claim.select(); };
+      document.querySelector('#unverified').onclick = () => { result.insertAdjacentHTML('afterbegin', '<p class="badge unknown">Saved for this session as unverified</p>'); };
+      document.querySelector('#cautious').onclick = () => { result.insertAdjacentHTML('afterbegin', '<p class="badge partial">Saved for this session as use cautiously</p>'); };
+    };
+    document.querySelector('#check').onclick = async () => {
+      result.innerHTML = '<h2>Result</h2><p class="muted">Checking the local evidence set…</p>';
+      try { const response = await fetch('/api/evaluate', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({claim:claim.value, mode:document.querySelector('#mode').value, evidence_limit:Number(document.querySelector('#evidence-limit').value)})}); render(await response.json()); }
+      catch (_) { render({error:'The local service is unavailable. Start app.py and try again.'}); }
+    };
+    document.querySelector('#example').onclick = () => { claim.value = 'Retrieval practice improves long-term retention.'; claim.focus(); };
+    document.querySelector('#theme').onclick = () => { const dark = document.documentElement.dataset.theme === 'dark'; document.documentElement.dataset.theme = dark ? 'light' : 'dark'; };
+    document.querySelector('#text-size').onchange = event => { document.body.classList.toggle('large-text', event.target.value === 'large'); };
+  </script>
+</body>
+</html>
