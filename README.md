@@ -57,11 +57,19 @@ developed functionality.
 | SVG | Architecture diagram and interaction storyboards in `Graphs/` |
 | No runtime model | Deliberately preserves a reproducible boundary: ClaimCheck retrieves and displays evidence; the student judges it |
 
+### AI tools used during development
+
+The **Copilot SDK in VS Code** was used as a development assistant for
+understanding requirements, comparing design options, drafting and improving
+code and documentation, planning tests, and creating and refining graph
+layouts and Mermaid instructions. It is not part of the deployed application:
+ClaimCheck uses no AI model at runtime. A future scholarly retrieval provider
+is still undecided because coverage, authority, rate limits, licensing and
+privacy would need evaluation before implementation.
+
 No external Python packages, database, API key or network request is required
 for the core application. The only external option is the Google Scholar link
-chosen by the user after an unverified result. The future retrieval provider,
-if one is added, remains undecided because coverage, authority, rate limits,
-licensing and privacy would need evaluation first.
+chosen by the user after an unverified result.
 
 ## Running and inspecting the work
 
@@ -106,32 +114,53 @@ search requires internet access.
 The public repository history is available at
 [github.com/AbdulAdamMMXXII/ClaimCheck/commits/main](https://github.com/AbdulAdamMMXXII/ClaimCheck/commits/main).
 
-- [Initial commit](https://github.com/AbdulAdamMMXXII/ClaimCheck/commit/5ed781802563b7f7ef74d830aa8cf15ddb3f060e):
+- [Initial commit](https://github.com/AbdulAdamMMXXII/ClaimCheck/commit/1b725c1c8db0033c8571d48b9f798239a60b630a):
   established the ClaimCheck repository and prototype baseline.
-- [Add files via upload](https://github.com/AbdulAdamMMXXII/ClaimCheck/commit/dabbb9087805e2717fe16911711ea0cde7a04517):
+- [Add files via upload](https://github.com/AbdulAdamMMXXII/ClaimCheck/commit/8efcc432f012c8701d7ce3aef840ed2ed39e6378):
   added the runnable project material and local evidence files.
-- [Revise README with project details and usage instructions](https://github.com/AbdulAdamMMXXII/ClaimCheck/commit/489dc1591bb1a9ed03e133a6e0796e43bd48b0c4):
-  documented project scope and inspection instructions.
+- [Enhance README with detailed project overview](https://github.com/AbdulAdamMMXXII/ClaimCheck/commit/7061461cedf75822363d3919c60d1794b5f31fdc):
+  documented the prototype, development decisions, evaluation plan and
+  limitations.
+- [Revise README with comprehensive project information](https://github.com/AbdulAdamMMXXII/ClaimCheck/commit/bcb3c40e9fad007e480ee010cbc7c8aad2880545):
+  expanded the project details, usage instructions and evaluation plan.
+- [Update README with detailed project information](https://github.com/AbdulAdamMMXXII/ClaimCheck/commit/b59b4c1019e532912c775a793bf2b42100e26f45):
+  clarified the system functionality, project status, technology stack and
+  usage instructions.
 
 The significant implementation decisions were to keep retrieval lexical and
 inspectable, refuse unsupported claims rather than invent answers, expose
 relevance limits, and add recovery actions after the Lab 3 failure analysis.
-Checks included Python compilation, the three verdict paths, mode and
-evidence-limit validation, absolute-wording detection, Scholar URL generation
-and an HTTP smoke test.
+These choices kept the prototype explainable and reproducible while making its
+limitations visible to the student. Checks included Python compilation, the
+three verdict paths, mode and evidence-limit validation, absolute-wording
+detection, Scholar URL generation and an HTTP smoke test.
 
 ## AI assistance
 
-AI assistance was provided by the **Copilot SDK in VS Code**. 
-It was used to
-help explore the existing lab artefacts, suggest a small local architecture,
-draft interface and diagram layouts, and identify focused validation cases.
-The author selected the project scope, supplied the requirements, checked the
-implementation against the actual files, rejected unsupported claims about
-live retrieval, 
-and revised the generated material for accuracy and British
-academic English. The report records the same authorship boundary; no model
-is used at runtime.
+AI assistance was provided by the **Copilot SDK in VS Code** throughout the
+development process. It was used as a support tool to:
+
+- understand and summarise the existing lab artefacts, requirements and
+  constraints;
+- explore and compare possible system structures, retrieval approaches,
+  interaction choices and implementation trade-offs;
+- help develop the local Python service, browser interface, evidence corpus
+  handling and supporting documentation;
+- suggest test cases, inspect test results, identify weaknesses and support
+  iterative improvements to the system;
+- draft, refine and explain the architecture and interaction graphs, including
+  instructions for Mermaid diagrams and their layout and presentation; and
+- improve the clarity of the README, report wording and user instructions.
+
+The author remained responsible for the system and its academic content. The
+author selected the scope and design decisions, supplied the requirements,
+reviewed and tested all suggestions against the actual implementation,
+corrected inaccuracies, rejected unsupported claims about live retrieval, and
+made the final decisions about what was included. For example, suggestions
+were constrained to lexical retrieval rather than presented as semantic
+truth-detection, and generated graph layouts were checked against the actual
+system flow before inclusion. AI assistance did not replace source evaluation
+or author judgement, and no AI model is used at runtime by ClaimCheck.
 
 ## Additional files
 
@@ -139,9 +168,6 @@ is used at runtime.
 - `corpus/`: evidence files; add Markdown with `source`, `section`, `updated`
   and optional `url` front matter.
 - `Graphs/`: architecture diagram and normal/failure storyboards.
-- `assessment2_report.md` and `assessment2_report.pdf`: Assessment 2 report
-  deliverables.
-- `ProjectDevInstructions.md`: original project design constraints.
 
 No additional ZIP file is required. Do not commit API keys, personal data or
 generated secrets. If a future provider needs credentials, a reviewer should
